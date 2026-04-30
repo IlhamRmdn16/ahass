@@ -39,7 +39,7 @@ class UnitEntryController extends Controller
 
         UnitEntry::create($validated);
 
-        return redirect()->back();
+        return redirect()->back()->with('success', 'Antrean motor berhasil ditambahkan!');
     }
 
     public function update(Request $request, $id)
@@ -79,6 +79,6 @@ class UnitEntryController extends Controller
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('unit-entry.pdf', compact('entries'));
         
-        return $pdf->download('laporan-unit-entry-' . now()->format('Y-m-d') . '.pdf');
+        return $pdf->stream('laporan-unit-entry-' . now()->format('Y-m-d') . '.pdf');
     }
 }

@@ -37,7 +37,7 @@ class ServiceHistoryController extends Controller
 
         $pdf = Pdf::loadView('unit-entry.pdf', compact('entries', 'date'));
         
-        return $pdf->download('laporan-ahass-' . $date . '.pdf');
+        return $pdf->stream('laporan-ahass-' . $date . '.pdf');
     }
 
     public function destroyByDate($date)

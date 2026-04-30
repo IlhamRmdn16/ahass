@@ -46,6 +46,29 @@
     </div>
 </div>
 
+<div class="bg-white rounded-lg shadow mb-6 overflow-hidden">
+    <div class="p-4 border-b bg-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-lg font-bold text-gray-800">Performa & Distribusi Mekanik</h2>
+            <p class="text-xs text-gray-500 mt-1">Grafik jumlah motor yang ditangani oleh masing-masing mekanik aktif.</p>
+        </div>
+        <form action="{{ route('dashboard.index') }}" method="GET" class="w-full sm:w-auto">
+            <select name="filter_date" onchange="this.form.submit()" class="w-full sm:w-auto border-gray-300 rounded-md shadow-sm border p-2 text-sm focus:ring-red-500 focus:border-red-500 font-medium text-gray-700 cursor-pointer bg-white">
+                <option value="today" {{ $filter == 'today' ? 'selected' : '' }}>Hari Ini</option>
+                <option value="week" {{ $filter == 'week' ? 'selected' : '' }}>7 Hari Terakhir</option>
+                <option value="month" {{ $filter == 'month' ? 'selected' : '' }}>Bulan Ini</option>
+                <option value="all" {{ $filter == 'all' ? 'selected' : '' }}>Semua Waktu</option>
+            </select>
+        </form>
+    </div>
+    <!-- Bungkus Canvas dengan DIV relative agar tingginya bisa diatur JS -->
+    <div class="p-6">
+        <div id="chartContainer" style="position: relative; width: 100%;">
+            <canvas id="mechanicChart"></canvas>
+        </div>
+    </div>
+</div>
+
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
         <h2 class="text-lg font-bold text-gray-800">5 Antrean Terakhir</h2>
@@ -83,4 +106,125 @@
         </table>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const labelsData = {!! json_encode($chartLabels) !!};
+        const valuesData = {!! json_encode($chartData) !!};
+        
+        // --- LOGIKA TINGGI DINAMIS ---
+        // Menyesuaikan tinggi bingkai chart berdasarkan jumlah mekanik
+        // Jika datanya sedikit, grafiknya akan merapat ke atas (tidak tinggi)
+        const container = document.getElementById('chartContainer');
+        // Jarak ideal: 36px untuk setiap 1 orang mekanik. Minimal tinggi adalah 90px.
+        const calculatedHeight = Math.max(90, labelsData.length * 36); 
+        container.style.height = calculatedHeight + 'px';
+
+        const ctx = document.getElementById('mechanicChart').getContext('2d');
+        
+        const aestheticColors = [
+            'rgba(220, 38, 38, 0.9)',
+            'rgba(55, 65, 81, 0.9)',
+            'rgba(153, 27, 27, 0.9)',
+            'rgba(17, 24, 39, 0.9)',
+            'rgba(239, 68, 68, 0.9)',
+            'rgba(75, 85, 99, 0.9)',
+            'rgba(248, 113, 113, 0.9)',
+            'rgba(31, 41, 55, 0.9)'
+        ];
+
+        let delayed;
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labelsData,
+                datasets: [{
+                    label: 'Total Unit',
+                    data: valuesData,
+                    backgroundColor: aestheticColors,
+                    borderWidth: 0,
+                    borderRadius: 4,     
+                    barThickness: 14,    // Mengunci ketebalan batang
+                }]
+            },
+            options: {
+                indexAxis: 'y', 
+                responsive: true,
+                maintainAspectRatio: false, // WAJIB false agar chart menuruti tinggi dinamis container
+                animation: {
+                    onComplete: () => {
+                        delayed = true;
+                    },
+                    delay: (context) => {
+                        let delay = 0;
+                        if (context.type === 'data' && context.mode === 'default' && !delayed) {
+                            delay = context.dataIndex * 100;
+                        }
+                        return delay;
+                    },
+                },
+                scales: {
+                    x: { 
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.04)',
+                            borderDash: [5, 5]
+                        },
+                        ticks: {
+                            stepSize: 1,
+                            font: {
+                                family: "'Figtree', sans-serif",
+                                size: 12
+                            },
+                            color: '#6B7280'
+                        },
+                        border: {
+                            display: false
+                        }
+                    },
+                    y: { 
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Figtree', sans-serif",
+                                weight: '600',
+                                size: 13
+                            },
+                            color: '#374151'
+                        },
+                        border: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+                        titleFont: { size: 13, family: "'Figtree', sans-serif", weight: 'normal' },
+                        bodyFont: { size: 14, family: "'Figtree', sans-serif", weight: 'bold' },
+                        padding: 12,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return 'Mekanik: ' + context[0].label;
+                            },
+                            label: function(context) {
+                                return context.parsed.x + ' Unit Diselesaikan'; 
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
 @endsection

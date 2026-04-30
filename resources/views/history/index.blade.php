@@ -51,7 +51,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex justify-center gap-3">
-                                <a href="{{ route('history.pdf', $history->entry_date) }}" class="text-red-600 hover:text-red-900 font-bold flex items-center gap-1">
+                                <a href="{{ route('history.pdf', $history->entry_date) }}" target="_blank" class="text-red-600 hover:text-red-900 font-bold flex items-center gap-1">
                                     Lihat PDF
                                 </a>
                                 <span class="text-gray-300">|</span>

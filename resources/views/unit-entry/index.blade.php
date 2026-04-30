@@ -55,8 +55,8 @@
 <div class="bg-white rounded-lg shadow overflow-hidden">
     <div class="p-4 border-b flex justify-between items-center bg-gray-50">
         <h2 class="text-lg font-bold text-gray-800">Antrean Hari Ini</h2>
-        <a href="{{ route('unit-entry.export-pdf') }}" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-bold py-1.5 px-4 rounded flex items-center gap-2">
-            Cetak PDF
+        <a href="{{ route('unit-entry.export-pdf') }}" target="_blank" class="bg-gray-800 hover:bg-gray-900 text-white text-sm font-bold py-1.5 px-4 rounded flex items-center gap-2">
+            Lihat PDF
         </a>
     </div>
     <div class="overflow-x-auto">
