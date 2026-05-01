@@ -3,43 +3,18 @@
 @section('title', 'Kelola Pengguna - Surya Wijaya')
 
 @section('content')
-<div x-data="{ showModal: false, user: { id: '', name: '', email: '', role: '' } }">
-    <div class="bg-white rounded-lg shadow mb-6 p-4">
-        <h2 class="text-lg font-bold text-gray-800 mb-4">Tambah Pengguna Baru</h2>
-        <form action="{{ route('users.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-            @csrf
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                <input type="text" name="name" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
-                <input type="email" name="email" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru</label>
-                <input type="password" name="password" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required minlength="8">
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Hak Akses (Role)</label>
-                <select name="role" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
-                    <option value="">Pilih Role</option>
-                    @foreach($roles as $role)
-                        <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="flex justify-end md:justify-start">
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow w-full">
-                    Buat Akun
-                </button>
-            </div>
-        </form>
-    </div>
+<div x-data="{ 
+    showAddModal: false, 
+    showEditModal: false, 
+    user: { id: '', name: '', email: '', role: '' } 
+}">
 
     <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div class="p-4 border-b bg-gray-50">
+        <div class="p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 gap-4">
             <h2 class="text-lg font-bold text-gray-800">Daftar Pengguna Sistem</h2>
+            <button @click="showAddModal = true" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded w-full sm:w-auto text-center shadow">
+                + Tambah Pengguna
+            </button>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
@@ -69,7 +44,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center flex justify-center gap-4">
-                                <button type="button" @click="user = { id: '{{ $u->id }}', name: '{{ addslashes($u->name) }}', email: '{{ addslashes($u->email) }}', role: '{{ $roleName }}' }; showModal = true;" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
+                                <button type="button" @click="user = { id: '{{ $u->id }}', name: '{{ addslashes($u->name) }}', email: '{{ addslashes($u->email) }}', role: '{{ $roleName }}' }; showEditModal = true;" class="text-blue-600 hover:text-blue-800 font-medium">Edit</button>
                                 <span class="text-gray-300">|</span>
                                 <form action="{{ route('users.destroy', $u->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun ini?');">
                                     @csrf
@@ -88,38 +63,96 @@
         </div>
     </div>
 
-    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:p-0">
-            <div x-show="showModal" x-transition.opacity @click="showModal = false" class="fixed inset-0 transition-opacity bg-black bg-opacity-50"></div>
+    <!-- Modal Tambah Pengguna -->
+    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex min-h-screen items-center justify-center p-4 py-10 text-center sm:p-0">
+            <div x-show="showAddModal" x-transition.opacity @click="showAddModal = false" class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
 
-            <div x-show="showModal" x-transition class="relative inline-block w-full max-w-md p-6 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg">
-                <h3 class="text-lg font-bold leading-6 text-gray-900 mb-4">Edit Pengguna</h3>
-                <form :action="`{{ url('users') }}/${user.id}`" method="POST">
+            <div x-show="showAddModal" x-transition class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-md w-full flex flex-col">
+                <form action="{{ route('users.store') }}" method="POST" class="flex flex-col">
+                    @csrf
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 overflow-y-auto">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">Tambah Pengguna Baru</h3>
+                            <button type="button" @click="showAddModal = false" class="text-gray-400 hover:text-gray-500">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                <input type="text" name="name" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
+                                <input type="email" name="email" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                <input type="password" name="password" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required minlength="8">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hak Akses (Role)</label>
+                                <select name="role" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                                    <option value="">Pilih Role</option>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-2 border-t mt-auto shrink-0">
+                        <button type="button" @click="showAddModal = false" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-bold py-2 px-4 rounded shadow-sm">Batal</button>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-sm">Buat Akun</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Pengguna -->
+    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen p-4 py-10 text-center sm:p-0">
+            <div x-show="showEditModal" x-transition.opacity @click="showEditModal = false" class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"></div>
+
+            <div x-show="showEditModal" x-transition class="relative bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:max-w-md w-full flex flex-col">
+                <form :action="`{{ url('users') }}/${user.id}`" method="POST" class="flex flex-col">
                     @csrf
                     @method('PUT')
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                        <input type="text" name="name" x-model="user.name" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 overflow-y-auto">
+                        <div class="flex justify-between items-center mb-4 border-b pb-2">
+                            <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">Edit Pengguna</h3>
+                            <button type="button" @click="showEditModal = false" class="text-gray-400 hover:text-gray-500">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+                                <input type="text" name="name" x-model="user.name" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
+                                <input type="email" name="email" x-model="user.email" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru <span class="text-gray-400 font-normal">(Kosongkan jika tidak diubah)</span></label>
+                                <input type="password" name="password" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" minlength="8">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hak Akses (Role)</label>
+                                <select name="role" x-model="user.role" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
+                                    @foreach($roles as $role)
+                                        <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Email / Username</label>
-                        <input type="email" name="email" x-model="user.email" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
-                    </div>
-                    <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Password Baru <span class="text-gray-400 font-normal">(Kosongkan jika tidak diubah)</span></label>
-                        <input type="password" name="password" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" minlength="8">
-                    </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Hak Akses (Role)</label>
-                        <select name="role" x-model="user.role" class="w-full border-gray-300 rounded-md shadow-sm border p-2 focus:ring-red-500 focus:border-red-500" required>
-                            @foreach($roles as $role)
-                                <option value="{{ $role->name }}">{{ ucwords(str_replace('_', ' ', $role->name)) }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" @click="showModal = false" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded shadow">Batal</button>
-                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow">Simpan Perubahan</button>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-2 border-t mt-auto shrink-0">
+                        <button type="button" @click="showEditModal = false" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-bold py-2 px-4 rounded shadow-sm">Batal</button>
+                        <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-sm">Simpan Perubahan</button>
                     </div>
                 </form>
             </div>
