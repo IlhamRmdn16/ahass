@@ -21,16 +21,16 @@
 
             <div class="flex items-center gap-4">
                 <div class="text-sm font-medium hidden md:block"
-                     x-data="{ 
+                     x-data="{
                         currentTime: '',
                         updateClock() {
                             const now = new Date();
                             const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
                             const datePart = now.toLocaleDateString('id-ID', optionsDate);
-                            
+
                             const hours = String(now.getHours()).padStart(2, '0');
                             const minutes = String(now.getMinutes()).padStart(2, '0');
-                            
+
                             this.currentTime = `${datePart} | ${hours}:${minutes} WIB`;
                         }
                      }"
@@ -50,15 +50,20 @@
                     </form>
                 </div>
 
+                <!-- Tombol menu hamburger disembunyikan untuk role entry -->
+                @hasanyrole('super_admin|viewer')
                 <button @click="isMobileOpen = !isMobileOpen" class="md:hidden p-2 bg-red-700 hover:bg-red-800 rounded text-white focus:outline-none transition">
                     <svg x-show="!isMobileOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     <svg x-show="isMobileOpen" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
+                @endhasanyrole
             </div>
         </header>
 
         <div class="flex flex-1 overflow-hidden relative">
 
+            <!-- Sidebar & Backdrop disembunyikan untuk role entry -->
+            @hasanyrole('super_admin|viewer')
             <div x-show="isMobileOpen" x-transition.opacity @click="isMobileOpen = false" x-cloak class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"></div>
 
             <aside
@@ -97,7 +102,6 @@
                     @endhasanyrole
 
                     @role('super_admin')
-                    
                     <div :class="{ 'opacity-100 h-8 pt-4': isPinned || isHovered, 'opacity-0 h-0 pt-0': !isPinned && !isHovered }" class="transition-all duration-300 overflow-hidden">
                         <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-2 whitespace-nowrap">Master Data</p>
                     </div>
@@ -131,8 +135,9 @@
 
                 </nav>
             </aside>
+            @endhasanyrole
 
-            <main class="flex-1 p-4 overflow-y-auto relative z-10">
+            <main class="flex-1 p-4 overflow-y-auto">
                     @if(session('success'))
                         <div x-data="{ show: true }" x-show="show" x-transition.duration.500ms x-init="setTimeout(() => show = false, 3000)" class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded shadow-sm flex justify-between items-center">
                             <div class="flex items-center gap-2 font-medium">

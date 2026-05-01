@@ -24,13 +24,12 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:super_admin|entry'])->group(function () {
         Route::get('/unit-entry', [UnitEntryController::class, 'index'])->name('unit-entry.index');
         Route::post('/unit-entry', [UnitEntryController::class, 'store'])->name('unit-entry.store');
+        Route::put('/unit-entry/{id}', [UnitEntryController::class, 'update'])->name('unit-entry.update');
+        Route::delete('/unit-entry/{id}', [UnitEntryController::class, 'destroy'])->name('unit-entry.destroy');
         Route::get('/unit-entry/export-pdf', [UnitEntryController::class, 'exportPdf'])->name('unit-entry.export-pdf');
     });
 
     Route::middleware(['role:super_admin'])->group(function () {
-        Route::put('/unit-entry/{id}', [UnitEntryController::class, 'update'])->name('unit-entry.update');
-        Route::delete('/unit-entry/{id}', [UnitEntryController::class, 'destroy'])->name('unit-entry.destroy');
-
         Route::delete('/riwayat-servis/{date}', [ServiceHistoryController::class, 'destroyByDate'])->name('history.destroy');
 
         Route::get('/mechanic', [MechanicController::class, 'index'])->name('mechanic.index');
